@@ -1,31 +1,57 @@
-import React, { useState,useEffect } from 'react';
-import Movie from './comps/movie';
+import React, { useState, useEffect } from "react";
+import Movie from "./comps/movie"
 
-const FEATURED_API = process.env.FEATURED_API;
-const IMAGE_API = process.env.IMAGE_API;
-const SEARCH_API = process.env.SEARCH_API
-
+const FEATURED_API =
+  "https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=7ecd0b11bc4cd387a22b43cb37086584";
+const SEARCH_API =
+  "https://api.themoviedb.org/3/search/movie?&api_key=7ecd0b11bc4cd387a22b43cb37086584&query=";
 
 function App() {
-  const [movies,setMovies] = useState([])
+  const [movies, setMovies] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(async()=>{
-    const moviesResp = await fetch(FEATURED_API)
-    const moviesR = await moviesResp.json()
+  const getMovies = (API) => {
+    fetch(API)
+      .then((res) => res.json())
+      .then((data) => setMovies(data.results));
+  };
 
-    setMovies(moviesR)
-  },[]) 
+  const handleOnSubmit = (event) => {
+    event.preventDefault();
 
-  const movie = [1,2,3]
-  return(
-    <div>
-    {movie.map(movie =>(
-      <Movie/>
-    ))}
-    </div>
-    
-  )
-  
+    if (searchTerm) {
+      getMovies(`${SEARCH_API}${searchTerm}`);
+      setSearchTerm("");
+    }
+  };
+
+  const handleOnChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  useEffect(() => {
+    getMovies(FEATURED_API);
+  }, []);
+
+  return (
+    <>
+      <header>
+        <form onSubmit={handleOnSubmit}>
+          <input
+            type="search"
+            className="search"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={handleOnChange}
+          />
+        </form>
+      </header>
+      <div className="movie-container">
+        {movies.length > 0 &&
+          movies.map((movie) => <Movie key={movie.id} {...movie} />)}
+      </div>
+    </>
+  );
 }
 
 export default App;
